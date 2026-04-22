@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorfey - 数字人皮肤</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #0A0A0F;
+            color: #E6E6E9;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(12px);
+            height: 72px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: #0A0A0F;
+            backdrop-filter: none;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffd700;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: #E6E6E9;
+            text-decoration: none;
+            font-size: 16px;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .login-btn {
+            padding: 6px 16px;
+            border: 1px solid #ffd700;
+            border-radius: 32px;
+            background: transparent;
+            color: #ffd700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+        }
+
+        /* 功能模块 */
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #ffd700;
+        }
+
+        /* 资产库 */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .asset-card {
+            background: #13131A;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #2A2A35;
+        }
+
+        .asset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            border-color: #ffd700;
+        }
+
+        .asset-image {
+            width: 100%;
+            height: 200px;
+            background-color: #0A0A0F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .asset-info {
+            padding: 1.5rem;
+        }
+
+        .asset-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #ffd700;
+        }
+
+        .asset-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+
+        .asset-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #E6E6E9;
+            border: 1px solid #E6E6E9;
+        }
+
+        .btn:hover {
+            transform: scale(0.98);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="window.location.href='index.html'">Lorfey</div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="assets.html">数字资产库</a></li>
+                <li><a href="learning.html">互动体验</a></li>
+                <li><a href="digital-characters.html">数字人皮肤</a></li>
+                <li><a href="choreography.html">创作辅助</a></li>
+                <li><a href="profile.html">我的</a></li>
+                <li id="admin-link"><a href="admin.html">后台管理</a></li>
+            </ul>
+            <div class="user-actions">
+                <button class="login-btn" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 数字人皮肤展示 -->
+        <section id="digital-characters" class="section">
+            <div class="section-container">
+                <h2 class="section-title">数字人皮肤展示</h2>
+                <div class="asset-grid">
+                    <div class="asset-card">
+                        <div class="asset-image">
+                            <video width="100%" height="200" controls>
+                                <source src="土家男人肉连响.mp4" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                        </div>
+                        <div class="asset-info">
+                            <h3 class="asset-title">土家男人皮肤</h3>
+                            <div class="asset-meta">
+                                <span>类型：传统皮肤</span>
+                                <span>时长：03:45</span>
+                            </div>
+                            <div class="asset-actions">
+                                <button class="btn btn-primary">应用</button>
+                                <button class="btn btn-secondary">收藏</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="asset-card">
+                        <div class="asset-image">
+                            <video width="100%" height="200" controls>
+                                <source src="阿凡达肉连响.mp4" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                        </div>
+                        <div class="asset-info">
+                            <h3 class="asset-title">阿凡达皮肤</h3>
+                            <div class="asset-meta">
+                                <span>类型：创意皮肤</span>
+                                <span>时长：03:15</span>
+                            </div>
+                            <div class="asset-actions">
+                                <button class="btn btn-primary">应用</button>
+                                <button class="btn btn-secondary">收藏</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="asset-card">
+                        <div class="asset-image">
+                            <video width="100%" height="200" controls>
+                                <source src="敦煌女子.mp4" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                        </div>
+                        <div class="asset-info">
+                            <h3 class="asset-title">敦煌女子皮肤</h3>
+                            <div class="asset-meta">
+                                <span>类型：传统皮肤</span>
+                                <span>时长：03:30</span>
+                            </div>
+                            <div class="asset-actions">
+                                <button class="btn btn-primary">应用</button>
+                                <button class="btn btn-secondary">收藏</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 检查用户登录状态
+        function checkLoginStatus() {
+            const userInfo = localStorage.getItem('userInfo');
+            if (!userInfo) {
+                // 如果没有登录信息，重定向到登录页面
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 检查用户模式
+        function checkUserMode() {
+            // 先检查登录状态
+            if (!checkLoginStatus()) {
+                return;
+            }
+            
+            const userMode = localStorage.getItem('userMode');
+            if (!userMode) {
+                // 如果没有选择模式，默认设置为用户端
+                localStorage.setItem('userMode', 'user');
+                window.location.reload();
+                return;
+            }
+            
+            // 立即隐藏后台管理链接，避免闪频
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = 'none';
+            }
+            
+            // 延迟执行，确保DOM元素已完全加载
+            setTimeout(() => {
+                const adminLink = document.getElementById('admin-link');
+                if (adminLink) {
+                    if (userMode === 'user') {
+                        adminLink.style.display = 'none';
+                    } else {
+                        adminLink.style.display = 'block';
+                    }
+                }
+            }, 100); // 延迟执行，确保DOM元素已加载
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('userMode');
+            localStorage.removeItem('userInfo');
+            window.location.href = 'login.html';
+        }
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 页面加载时检查用户模式
+        window.onload = checkUserMode;
+    </script>
+</body>
+</html>

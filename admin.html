@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorfey - 传播与教学后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #0A0A0F;
+            color: #E6E6E9;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(12px);
+            height: 72px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: #0A0A0F;
+            backdrop-filter: none;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffd700;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: #E6E6E9;
+            text-decoration: none;
+            font-size: 16px;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .login-btn {
+            padding: 6px 16px;
+            border: 1px solid #ffd700;
+            border-radius: 32px;
+            background: transparent;
+            color: #ffd700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+        }
+
+        /* 后台管理 */
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 72px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #13131A;
+            color: #E6E6E9;
+            padding: 2rem 0;
+            border-right: 1px solid #2A2A35;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu li:hover {
+            background-color: #1A1A24;
+        }
+
+        .sidebar-menu li.active {
+            background-color: #1A1A24;
+            border-left: 3px solid #ffd700;
+            color: #ffd700;
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 2rem;
+            background: #13131A;
+            overflow-y: auto;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            min-height: 600px;
+        }
+
+        /* 短视频工坊 */
+        .video-workshop {
+            display: none;
+        }
+
+        .video-workshop.active {
+            display: block;
+        }
+
+        .step-wizard {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #2A2A35;
+            z-index: 1;
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #2A2A35;
+            color: #E6E6E9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step.active .step-number {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .step-content {
+            background: #1A1A24;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .step-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* 教学动图生成器 */
+        .gif-generator {
+            display: none;
+        }
+
+        .gif-generator.active {
+            display: block;
+        }
+
+        .gif-generator-content {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .video-selection {
+            flex: 1;
+            background: #1A1A24;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .params-output {
+            flex: 1;
+            background: #1A1A24;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        /* 课堂管理 */
+        .classroom-management {
+            display: none;
+        }
+
+        .classroom-management.active {
+            display: block;
+        }
+
+        .class-list {
+            margin-bottom: 2rem;
+        }
+
+        /* 表格 */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1A1A24;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #2A2A35;
+        }
+
+        .table th {
+            background: #252530;
+            font-weight: 600;
+        }
+
+        .table tr:hover {
+            background: #1A1A24;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0A0A0F;
+            border: 1px solid #2A2A35;
+            border-radius: 4px;
+            color: #E6E6E9;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        /* 视频预览 */
+        .video-preview {
+            margin: 1rem 0;
+        }
+
+        .video-preview video {
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #E6E6E9;
+            border: 1px solid #E6E6E9;
+        }
+
+        .btn:hover {
+            transform: scale(0.98);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .admin-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 1rem 0;
+                border-right: none;
+                border-bottom: 1px solid #2A2A35;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .sidebar-menu li {
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+
+            .sidebar-menu li.active {
+                border-left: none;
+                border-bottom: 3px solid #ffd700;
+            }
+
+            .gif-generator-content {
+                flex-direction: column;
+            }
+
+            .steps {
+                font-size: 12px;
+            }
+
+            .step-number {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="window.location.href='index.html'">Lorfey</div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="assets.html">数字资产库</a></li>
+                <li><a href="learning.html">互动体验</a></li>
+                <li><a href="digital-characters.html">数字人皮肤</a></li>
+                <li><a href="choreography.html">创作辅助</a></li>
+                <li><a href="profile.html">我的</a></li>
+                <li id="admin-link"><a href="admin.html">后台管理</a></li>
+            </ul>
+            <div class="user-actions">
+                <button class="login-btn" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 后台管理 -->
+        <section id="admin" class="section">
+            <div class="admin-container">
+                <div class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li class="active" data-target="video-workshop">短视频工坊</li>
+                        <li data-target="gif-generator">教学动图生成器</li>
+                        <li data-target="classroom-management">课堂管理</li>
+                        <li data-target="task-management">采集任务管理</li>
+                        <li data-target="asset-audit">资产审核</li>
+                        <li data-target="user-management">用户管理</li>
+                        <li data-target="copyright">版权存证</li>
+                        <li data-target="system-status">系统状态</li>
+                    </ul>
+                </div>
+                <div class="admin-content">
+                    <div class="content-area">
+                        <!-- 短视频工坊 -->
+                        <div class="video-workshop active" id="video-workshop">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">短视频工坊</h2>
+                            <div class="step-wizard">
+                                <div class="steps">
+                                    <div class="step active">
+                                        <div class="step-number">1</div>
+                                        <div>选择数字人形象</div>
+                                    </div>
+                                    <div class="step">
+                                        <div class="step-number">2</div>
+                                        <div>选择舞蹈片段</div>
+                                    </div>
+                                    <div class="step">
+                                        <div class="step-number">3</div>
+                                        <div>选择背景音乐</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 步骤1：选择数字人形象 -->
+                                <div class="step-content">
+                                    <h3 style="margin-bottom: 1.5rem; color: #ffd700;">步骤1：选择数字人形象</h3>
+                                    <div class="form-group">
+                                        <label>数字人形象</label>
+                                        <div style="margin: 1rem 0;">
+                                            <input type="radio" id="character1" name="character" value="character1" checked disabled>
+                                            <label for="character1" style="margin-left: 0.5rem;">默认数字人</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="step-actions">
+                                    <button class="btn btn-secondary" disabled>上一步</button>
+                                    <button class="btn btn-primary" onclick="nextStep(1)">下一步</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 教学动图生成器 -->
+                        <div class="gif-generator" id="gif-generator">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">教学动图生成器</h2>
+                            <div class="gif-generator-content">
+                                <div class="video-selection">
+                                    <h3 style="margin-bottom: 1.5rem; color: #ffd700;">视频选择</h3>
+                                    <div class="form-group">
+                                        <label>视频来源</label>
+                                        <select>
+                                            <option>从已入库舞蹈中选择</option>
+                                            <option>上传本地视频</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>选择舞蹈</label>
+                                        <select>
+                                            <option>肉连响</option>
+                                            <option>摆手舞</option>
+                                            <option>滚龙莲香</option>
+                                        </select>
+                                    </div>
+                                    <div class="video-preview">
+                                        <video controls>
+                                            <source src="肉连响骨骼图.mp4" type="video/mp4">
+                                            您的浏览器不支持视频播放。
+                                        </video>
+                                    </div>
+                                </div>
+                                <div class="params-output">
+                                    <h3 style="margin-bottom: 1.5rem; color: #ffd700;">参数设置</h3>
+                                    <div class="form-group">
+                                        <label>提取间隔：<span id="interval-value">1.0s</span></label>
+                                        <input type="range" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('interval-value').textContent = this.value + 's'">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox"> 关键帧检测
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary" style="width: 100%">生成动图</button>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>生成结果</label>
+                                        <div style="background: #0A0A0F; padding: 1rem; border-radius: 4px;">
+                                            <p>生成中...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 课堂管理 -->
+                        <div class="classroom-management" id="classroom-management">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">课堂管理</h2>
+                            <div class="class-list">
+                                <button class="btn btn-primary" style="margin-bottom: 1rem;">创建班级</button>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>班级ID</th>
+                                            <th>班级名称</th>
+                                            <th>邀请码</th>
+                                            <th>学生数</th>
+                                            <th>创建时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>土家族舞蹈一班</td>
+                                            <td>ABC123</td>
+                                            <td>30</td>
+                                            <td>2024-01-01</td>
+                                            <td>
+                                                <button class="btn btn-secondary">查看详情</button>
+                                                <button class="btn btn-secondary">删除班级</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>2</td>
+                                            <td>土家族舞蹈二班</td>
+                                            <td>DEF456</td>
+                                            <td>25</td>
+                                            <td>2024-01-02</td>
+                                            <td>
+                                                <button class="btn btn-secondary">查看详情</button>
+                                                <button class="btn btn-secondary">删除班级</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #ffd700;">作业管理</h3>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>作业ID</th>
+                                        <th>作业名称</th>
+                                        <th>舞蹈动作</th>
+                                        <th>截止日期</th>
+                                        <th>提交人数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>肉连响基础动作练习</td>
+                                        <td>单摆</td>
+                                        <td>2024-01-10</td>
+                                        <td>25</td>
+                                        <td>
+                                            <button class="btn btn-secondary">查看成绩</button>
+                                            <button class="btn btn-secondary">导出CSV</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>摆手舞练习</td>
+                                        <td>双摆</td>
+                                        <td>2024-01-15</td>
+                                        <td>20</td>
+                                        <td>
+                                            <button class="btn btn-secondary">查看成绩</button>
+                                            <button class="btn btn-secondary">导出CSV</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 采集任务管理 -->
+                        <div class="task-management" id="task-management">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">采集任务管理</h2>
+                            <div style="margin-bottom: 1rem;">
+                                <button class="btn btn-primary">新增任务</button>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>任务ID</th>
+                                        <th>舞蹈名称</th>
+                                        <th>传承人</th>
+                                        <th>采集状态</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>肉连响</td>
+                                        <td>张明</td>
+                                        <td>已完成</td>
+                                        <td>2024-01-01</td>
+                                        <td>
+                                            <button class="btn btn-secondary">查看</button>
+                                            <button class="btn btn-primary">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>摆手舞</td>
+                                        <td>李华</td>
+                                        <td>进行中</td>
+                                        <td>2024-01-02</td>
+                                        <td>
+                                            <button class="btn btn-secondary">查看</button>
+                                            <button class="btn btn-primary">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>滚龙莲香</td>
+                                        <td>王芳</td>
+                                        <td>待处理</td>
+                                        <td>2024-01-03</td>
+                                        <td>
+                                            <button class="btn btn-secondary">查看</button>
+                                            <button class="btn btn-primary">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>土家男人肉连响</td>
+                                        <td>土家族</td>
+                                        <td>已完成</td>
+                                        <td>2024-01-04</td>
+                                        <td>
+                                            <button class="btn btn-secondary">查看</button>
+                                            <button class="btn btn-primary">编辑</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 资产审核 -->
+                        <div class="asset-audit" id="asset-audit">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">资产审核</h2>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>资产ID</th>
+                                        <th>资产名称</th>
+                                        <th>类型</th>
+                                        <th>上传用户</th>
+                                        <th>上传时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>肉连响教学视频</td>
+                                        <td>视频</td>
+                                        <td>张三</td>
+                                        <td>2024-01-01</td>
+                                        <td>待审核</td>
+                                        <td>
+                                            <button class="btn btn-primary">通过</button>
+                                            <button class="btn btn-secondary">拒绝</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>摆手舞动作分解</td>
+                                        <td>视频</td>
+                                        <td>李四</td>
+                                        <td>2024-01-02</td>
+                                        <td>已通过</td>
+                                        <td>
+                                            <button class="btn btn-secondary">查看</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 用户管理 -->
+                        <div class="user-management" id="user-management">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">用户管理</h2>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>用户ID</th>
+                                        <th>姓名</th>
+                                        <th>手机号</th>
+                                        <th>角色</th>
+                                        <th>注册时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>张三</td>
+                                        <td>13800138000</td>
+                                        <td>普通用户</td>
+                                        <td>2024-01-01</td>
+                                        <td>
+                                            <button class="btn btn-primary">编辑</button>
+                                            <button class="btn btn-secondary">删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>李四</td>
+                                        <td>13900139000</td>
+                                        <td>教师</td>
+                                        <td>2024-01-02</td>
+                                        <td>
+                                            <button class="btn btn-primary">编辑</button>
+                                            <button class="btn btn-secondary">删除</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 版权存证 -->
+                        <div class="copyright" id="copyright" style="display: none;">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">版权存证</h2>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>舞蹈名称</th>
+                                        <th>数据包名称</th>
+                                        <th>存证ID</th>
+                                        <th>存证时间戳</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>肉连响</td>
+                                        <td>肉连响_原始动捕</td>
+                                        <td>550e8400-e29b-41d4-a716-446655440000</td>
+                                        <td>2024-01-01 12:00:00</td>
+                                        <td>
+                                            <button class="btn btn-primary">生成证书</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>摆手舞</td>
+                                        <td>摆手舞_原始动捕</td>
+                                        <td>550e8400-e29b-41d4-a716-446655440001</td>
+                                        <td>2024-01-02 13:00:00</td>
+                                        <td>
+                                            <button class="btn btn-primary">生成证书</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 系统状态 -->
+                        <div class="system-status" id="system-status" style="display: none;">
+                            <h2 style="margin-bottom: 2rem; color: #ffd700;">系统状态</h2>
+                            
+                            <!-- 访问量统计 -->
+                            <div style="background: #1A1A24; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                                <h3 style="margin-bottom: 1.5rem; color: #ffd700;">最近7天访问量</h3>
+                                <div style="height: 300px; background: #0A0A0F; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                    <p>访问量折线图</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 磁盘使用量 -->
+                            <div style="background: #1A1A24; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                                <h3 style="margin-bottom: 1rem; color: #ffd700;">磁盘使用量</h3>
+                                <div style="margin-bottom: 0.5rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span>已用空间: 45GB</span>
+                                        <span>总空间: 200GB</span>
+                                        <span>22.5%</span>
+                                    </div>
+                                    <div style="height: 10px; background: #2A2A35; border-radius: 5px; overflow: hidden;">
+                                        <div style="height: 100%; width: 22.5%; background: #ffd700;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 错误日志 -->
+                            <div style="background: #1A1A24; border-radius: 8px; padding: 1.5rem;">
+                                <h3 style="margin-bottom: 1rem; color: #ffd700;">最近10条错误日志</h3>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>时间</th>
+                                            <th>错误信息</th>
+                                            <th>来源</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2024-01-01 12:00:00</td>
+                                            <td>数据库连接超时</td>
+                                            <td>API</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2024-01-01 11:30:00</td>
+                                            <td>文件上传失败</td>
+                                            <td>上传模块</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 检查用户登录状态
+        function checkLoginStatus() {
+            const userInfo = localStorage.getItem('userInfo');
+            if (!userInfo) {
+                // 如果没有登录信息，重定向到登录页面
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 检查用户模式
+        function checkUserMode() {
+            // 先检查登录状态
+            if (!checkLoginStatus()) {
+                return;
+            }
+            
+            const userMode = localStorage.getItem('userMode');
+            if (!userMode || userMode !== 'dev') {
+                // 如果没有选择模式或不是开发端用户，重定向到登录页面
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // 立即隐藏后台管理链接，避免闪频
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = 'none';
+            }
+            
+            // 延迟执行，确保DOM元素已完全加载
+            setTimeout(() => {
+                const adminLink = document.getElementById('admin-link');
+                if (adminLink) {
+                    if (userMode === 'user') {
+                        adminLink.style.display = 'none';
+                    } else {
+                        adminLink.style.display = 'block';
+                    }
+                }
+            }, 100); // 延迟执行，确保DOM元素已加载
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('userMode');
+            localStorage.removeItem('userInfo');
+            window.location.href = 'login.html';
+        }
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 侧边栏导航切换
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuItems = document.querySelectorAll('.sidebar-menu li');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 移除所有菜单项的活动状态
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    // 添加当前菜单项的活动状态
+                    this.classList.add('active');
+                    
+                    // 隐藏所有内容区域
+                    const contentAreas = document.querySelectorAll('.content-area > div');
+                    contentAreas.forEach(area => {
+                        area.classList.remove('active');
+                    });
+                    
+                    // 显示目标内容区域
+                    const target = this.getAttribute('data-target');
+                    document.getElementById(target).classList.add('active');
+                });
+            });
+        });
+
+        // 短视频工坊步骤切换
+        function nextStep(currentStep) {
+            const steps = document.querySelectorAll('.step');
+            if (currentStep < steps.length) {
+                steps[currentStep - 1].classList.remove('active');
+                steps[currentStep].classList.add('active');
+            }
+        }
+
+        function prevStep(currentStep) {
+            const steps = document.querySelectorAll('.step');
+            if (currentStep > 1) {
+                steps[currentStep - 1].classList.remove('active');
+                steps[currentStep - 2].classList.add('active');
+            }
+        }
+
+        // 页面加载时检查用户模式
+        window.onload = checkUserMode;
+    </script>
+</body>
+</html>

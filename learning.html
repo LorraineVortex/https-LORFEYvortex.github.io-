@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorfey - 体感学习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #0A0A0F;
+            color: #E6E6E9;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(12px);
+            height: 72px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: #0A0A0F;
+            backdrop-filter: none;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffd700;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: #E6E6E9;
+            text-decoration: none;
+            font-size: 16px;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .login-btn {
+            padding: 6px 16px;
+            border: 1px solid #ffd700;
+            border-radius: 32px;
+            background: transparent;
+            color: #ffd700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+        }
+
+        /* 功能模块 */
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        /* 体感学习 */
+        .learning-container {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .video-container {
+            flex: 6;
+            background: #13131A;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2A2A35;
+        }
+
+        .video-player {
+            width: 100%;
+            padding-bottom: 75%;
+            position: relative;
+            background-color: #000;
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .video-player video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .video-player canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .video-controls {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .learning-panel {
+            flex: 4;
+            background: #13131A;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2A2A35;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #E6E6E9;
+            border: 1px solid #E6E6E9;
+        }
+
+        .btn:hover {
+            transform: scale(0.98);
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #E6E6E9;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0A0A0F;
+            border: 1px solid #2A2A35;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #E6E6E9;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #ffd700;
+            outline: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .learning-container {
+                flex-direction: column;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 灵域精灵AI智能体 */
+        .ai-spirit-container {
+            margin-top: 3rem;
+            background: #13131A;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2A2A35;
+        }
+
+        .ai-spirit-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-spirit-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ff9800);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .ai-spirit-info h3 {
+            color: #ffd700;
+            margin-bottom: 0.25rem;
+        }
+
+        .ai-spirit-info p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .ai-chat-container {
+            display: flex;
+            gap: 1rem;
+            height: 400px;
+        }
+
+        .ai-quick-questions {
+            flex: 1;
+            background: #0A0A0F;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .ai-quick-questions h4 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .quick-question {
+            background: #1A1A24;
+            border: 1px solid #2A2A35;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #E6E6E9;
+            font-size: 0.9rem;
+        }
+
+        .quick-question:hover {
+            border-color: #ffd700;
+            background: #13131A;
+        }
+
+        .ai-chat-main {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            background: #0A0A0F;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .ai-message {
+            background: #1A1A24;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #2A2A35;
+        }
+
+        .ai-message.user {
+            background: #13131A;
+            border-color: #ffd700;
+        }
+
+        .ai-message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-message-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ff9800);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .ai-message.user .ai-message-avatar {
+            background: #4caf50;
+        }
+
+        .ai-message-sender {
+            font-size: 0.8rem;
+            color: #ffd700;
+            font-weight: 500;
+        }
+
+        .ai-message.user .ai-message-sender {
+            color: #4caf50;
+        }
+
+        .ai-message-content {
+            color: #E6E6E9;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .ai-message-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-message-content strong {
+            color: #ffd700;
+        }
+
+        .ai-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .ai-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: #0A0A0F;
+            border: 1px solid #2A2A35;
+            border-radius: 8px;
+            color: #E6E6E9;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .ai-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .ai-send-btn {
+            padding: 0.75rem 1.5rem;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .ai-send-btn:hover {
+            background: #ff9800;
+        }
+
+        .ai-send-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.5rem;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: typing 1s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+
+        .learning-plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .learning-plan-table th,
+        .learning-plan-table td {
+            border: 1px solid #2A2A35;
+            padding: 0.5rem;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .learning-plan-table th {
+            background: #0A0A0F;
+            color: #ffd700;
+        }
+
+        @media (max-width: 768px) {
+            .ai-chat-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .ai-quick-questions {
+                max-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="window.location.href='index.html'">Lorfey</div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="assets.html">数字资产库</a></li>
+                <li><a href="learning.html">互动体验</a></li>
+                <li><a href="digital-characters.html">数字人皮肤</a></li>
+                <li><a href="choreography.html">创作辅助</a></li>
+                <li><a href="profile.html">我的</a></li>
+                <li id="admin-link"><a href="admin.html">后台管理</a></li>
+            </ul>
+            <div class="user-actions">
+                <button class="login-btn" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 互动体验中心 -->
+        <section id="learning" class="section">
+            <div class="section-container">
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <h2 style="font-size: 32px; color: #ffd700; margin-bottom: 0.5rem;">起舞吧 —— 体感学习非遗舞蹈</h2>
+                    <p style="font-size: 16px; color: #999;">跟随虚拟老师的指导，体验非遗舞蹈的魅力</p>
+                </div>
+                
+                <div class="learning-container">
+                    <!-- 左侧摄像头区域 -->
+                    <div class="video-container">
+                        <div class="video-player">
+                            <video id="webcam" width="100%" height="100%" autoplay></video>
+                            <canvas id="skeleton" width="100%" height="100%"></canvas>
+                            <div id="camera-prompt" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; z-index: 2;">
+                                <p>请允许摄像头权限</p>
+                                <button id="test-camera" class="btn btn-primary" style="margin-top: 1rem;">测试摄像头</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧教学面板 -->
+                    <div class="learning-panel">
+                        <!-- 舞蹈选择 -->
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label class="form-label">选择舞蹈</label>
+                            <select class="form-control">
+                                <option>土家族摆手舞·单摆动作</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 虚拟老师区域 -->
+                        <div style="text-align: center; margin-bottom: 2rem;">
+                            <div style="width: 120px; height: 120px; border-radius: 50%; background-color: #0A0A0F; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; border: 1px solid #2A2A35;">
+                                <div style="font-size: 3rem;">👤</div>
+                            </div>
+                            <div style="font-size: 16px; font-weight: 500; color: #ffd700;">单摆</div>
+                        </div>
+                        
+                        <!-- 开始跟练按钮 -->
+                        <button id="start-practice" class="btn" style="width: 100%; height: 48px; background-color: #ffd700; color: #000; border-radius: 40px; font-size: 18px; font-weight: 500; margin-bottom: 2rem;">开始跟练</button>
+                        
+                        <!-- 匹配度圆环 -->
+                        <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+                            <div style="position: relative; width: 100px; height: 100px;">
+                                <svg width="100" height="100" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#2A2A35" stroke-width="8"/>
+                                    <circle id="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="#4caf50" stroke-width="8" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="70"/>
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; font-weight: bold; color: #E6E6E9;">75%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 引导提示区 -->
+                        <div style="background-color: #13131A; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #2A2A35;">
+                            <h4 style="margin-bottom: 0.5rem; color: #ffd700;">当前步骤</h4>
+                            <p style="color: #E6E6E9;">第 1 步：右手上举至与肩同高</p>
+                            <h4 style="margin: 1rem 0 0.5rem; color: #ffd700;">纠错提示</h4>
+                            <p style="color: #E6E6E9;">左手再抬高一点</p>
+                        </div>
+                        
+                        <!-- 完成面板 (默认隐藏) -->
+                        <div id="completion-panel" style="display: none; background-color: #13131A; padding: 1.5rem; border-radius: 8px; text-align: center; border: 1px solid #2A2A35;">
+                            <h3 style="margin-bottom: 1rem; color: #ffd700;">练习完成！</h3>
+                            <p style="font-size: 18px; font-weight: bold; margin-bottom: 1.5rem; color: #E6E6E9;">总匹配度：85%</p>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-primary" style="flex: 1;">保存成绩</button>
+                                <button class="btn btn-secondary" style="flex: 1;">重新开始</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- VR沉浸入口 -->
+                <div style="margin-top: 3rem; background: #13131A; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); border: 1px solid #2A2A35;">
+                    <h3 style="color: #ffd700;">VR沉浸体验</h3>
+                    <p style="margin: 1rem 0; color: #E6E6E9;">需要 VR 头显，线下体验点合作中</p>
+                    <button class="btn btn-secondary">了解详情</button>
+                </div>
+
+                <!-- 灵域精灵AI智能体 -->
+                <div class="ai-spirit-container">
+                    <div class="ai-spirit-header">
+                        <div class="ai-spirit-avatar">🧚</div>
+                        <div class="ai-spirit-info">
+                            <h3>灵域精灵 AI智能体</h3>
+                            <p>您的非遗文化知识顾问</p>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-chat-container">
+                        <div class="ai-quick-questions">
+                            <h4>快捷问题</h4>
+                            <div class="quick-question" onclick="askQuestion('肉连响的动作要领是什么？')">肉连响的动作要领是什么？</div>
+                            <div class="quick-question" onclick="askQuestion('摆手舞的起源是什么？')">摆手舞的起源是什么？</div>
+                            <div class="quick-question" onclick="askQuestion('土家族舞蹈的文化寓意')">土家族舞蹈的文化寓意</div>
+                            <div class="quick-question" onclick="askQuestion('单摆动作的步骤教学')">单摆动作的步骤教学</div>
+                            <div class="quick-question" onclick="askQuestion('为我制定一个学习计划表')">为我制定一个学习计划表</div>
+                            <div class="quick-question" onclick="askQuestion('非遗舞蹈传承的重要性')">非遗舞蹈传承的重要性</div>
+                        </div>
+                        <div class="ai-chat-main">
+                            <div class="ai-chat-messages" id="chat-messages">
+                                <div class="ai-message">
+                                    <div class="ai-message-header">
+                                        <div class="ai-message-avatar">🧚</div>
+                                        <span class="ai-message-sender">灵域精灵</span>
+                                    </div>
+                                    <div class="ai-message-content">
+                                        <p>您好！我是灵域精灵，您的非遗文化知识顾问。</p>
+                                        <p>我可以为您讲解：</p>
+                                        <p>• 舞蹈动作的要领与技巧</p>
+                                        <p>• 舞蹈的起源与发展历史</p>
+                                        <p>• 舞蹈背后的文化寓意</p>
+                                        <p>• 为您制定学习计划表</p>
+                                        <p>• 土家族非遗舞蹈的相关知识</p>
+                                        <p>请随时向我提问！</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-input-container">
+                                <input type="text" class="ai-input" id="ai-input" placeholder="请输入您的问题，例如：肉连响的动作要领是什么？" onkeypress="handleKeyPress(event)">
+                                <button class="ai-send-btn" id="ai-send-btn" onclick="sendMessage()">发送</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 检查用户登录状态
+        function checkLoginStatus() {
+            const userInfo = localStorage.getItem('userInfo');
+            if (!userInfo) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 检查用户模式
+        function checkUserMode() {
+            if (!checkLoginStatus()) {
+                return;
+            }
+            
+            const userMode = localStorage.getItem('userMode');
+            if (!userMode) {
+                localStorage.setItem('userMode', 'user');
+                window.location.reload();
+                return;
+            }
+            
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = 'none';
+            }
+            
+            setTimeout(() => {
+                const adminLink = document.getElementById('admin-link');
+                if (adminLink) {
+                    if (userMode === 'user') {
+                        adminLink.style.display = 'none';
+                    } else {
+                        adminLink.style.display = 'block';
+                    }
+                }
+            }, 100);
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('userMode');
+            localStorage.removeItem('userInfo');
+            window.location.href = 'login.html';
+        }
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // AI智能问答功能
+        const danceKnowledge = {
+            '肉连响': {
+                origin: '肉连响是土家族的传统舞蹈，源于湖北省利川市，已被列入国家级非物质文化遗产名录。相传起源于古代祭祀活动，是土家族人民在劳动生活中创造的舞蹈形式。',
+                meaning: '肉连响表达了土家族人民对自然的敬畏和对生活的热爱，舞蹈动作模拟劳动场景，体现了土家族人民的勤劳和智慧。',
+                moves: '肉连响的主要动作包括：\n1. 基本步伐：双脚交替跳跃\n2. 手臂动作：双手随节奏摆动\n3. 身体协调：腰部随步伐扭转\n4. 节奏特点：以急促的节奏为主\n\n动作要领：身体放松，节奏明快，动作要干脆利落。'
+            },
+            '摆手舞': {
+                origin: '摆手舞是土家族古老的舞蹈形式，起源于商周时期，已有数千年的历史。主要流传于湘、鄂、渝、黔交界的土家族地区。',
+                meaning: '摆手舞表达了土家族人民对祖先的纪念和对自然的崇拜，是土家族祭祀文化的重要组成部分。舞蹈动作包含了土家族人民的生产生活方式。',
+                moves: '摆手舞的主要动作包括：\n1. 单摆：单手左右摆动\n2. 双摆：双手同时摆动\n3. 脚步动作：双脚交替踏步\n4. 转身动作：配合脚步转身\n\n动作要领：动作舒缓优美，节奏平稳，注重手脚协调。'
+            },
+            '单摆': {
+                origin: '单摆是土家族摆手舞中的基本动作之一，是学习摆手舞的基础动作。',
+                meaning: '单摆动作象征着土家族人民与自然的和谐共处，体现了舞蹈的柔美与力量。',
+                moves: '单摆动作步骤：\n1. 准备姿势：双脚与肩同宽，双手自然下垂\n2. 右手上举至与肩同高\n3. 右手向右侧摆动，同时左手自然摆动\n4. 右手返回至胸前位置\n5. 重复练习，逐渐加快速度\n\n动作要领：动作要流畅自然，重心稳定，呼吸均匀。'
+            },
+            '双摆': {
+                origin: '双摆是土家族摆手舞中的重要动作，是单摆的进阶动作。',
+                meaning: '双摆动作展现了土家族舞蹈的整齐划一，体现了土家族人民的团结精神。',
+                moves: '双摆动作步骤：\n1. 准备姿势：双脚与肩同宽，双手自然下垂\n2. 双手同时上举\n3. 双手同时向右侧摆动\n4. 双手同时返回至胸前\n5. 双手同时向左侧摆动\n6. 重复练习\n\n动作要领：双手动作要同步，节奏要稳，注重整体协调。'
+            },
+            '滚龙莲香': {
+                origin: '滚龙莲香是土家族的传统舞蹈，源于民间传说，具有悠久的历史。',
+                meaning: '滚龙莲香象征着吉祥如意，体现了土家族人民对美好生活的向往和祈盼。',
+                moves: '滚龙莲香的主要动作包括龙形舞动、莲花手势等，动作优美流畅。\n\n动作要领：注重身形韵律，动作要柔美而有力度。'
+            }
+        };
+
+        function getLearningPlan() {
+            return `<strong>土家族非遗舞蹈学习计划表</strong>
+
+📋 <strong>第一周 - 基础入门</strong>
+<table class="learning-plan-table">
+<tr><th>时间</th><th>学习内容</th><th>练习时长</th><th>目标</th></tr>
+<tr><td>第1天</td><td>了解土家族舞蹈文化背景</td><td>30分钟</td><td>掌握基础知识</td></tr>
+<tr><td>第2天</td><td>单摆基本动作学习</td><td>45分钟</td><td>动作规范</td></tr>
+<tr><td>第3-4天</td><td>单摆动作反复练习</td><td>每天60分钟</td><td>熟练掌握</td></tr>
+<tr><td>第5-7天</td><td>配合音乐练习单摆</td><td>每天45分钟</td><td>节奏协调</td></tr>
+</table>
+
+📋 <strong>第二周 - 动作进阶</strong>
+<table class="learning-plan-table">
+<tr><th>时间</th><th>学习内容</th><th>练习时长</th><th>目标</th></tr>
+<tr><td>第8-9天</td><td>学习双摆动作</td><td>每天50分钟</td><td>掌握双手配合</td></tr>
+<tr><td>第10-11天</td><td>双摆与单摆的衔接</td><td>每天60分钟</td><td>动作连贯</td></tr>
+<tr><td>第12-14天</td><td>配合音乐完整练习</td><td>每天45分钟</td><td>节奏稳定</td></tr>
+</table>
+
+📋 <strong>第三周 - 组合学习</strong>
+<table class="learning-plan-table">
+<tr><th>时间</th><th>学习内容</th><th>练习时长</th><th>目标</th></tr>
+<tr><td>第15-17天</td><td>学习摆手舞基础组合</td><td>每天60分钟</td><td>组合协调</td></tr>
+<tr><td>第18-19天</td><td>练习肉连响基本步伐</td><td>每天50分钟</td><td>步伐准确</td></tr>
+<tr><td>第20-21天</td><td>复习巩固，录制视频</td><td>每天45分钟</td><td>成果展示</td></tr>
+</table>
+
+📋 <strong>第四周 - 综合提升</strong>
+<table class="learning-plan-table">
+<tr><th>时间</th><th>学习内容</th><th>练习时长</th><th>目标</th></tr>
+<tr><td>第22-24天</td><td>学习完整舞蹈套路</td><td>每天60分钟</td><td>套路完整</td></tr>
+<tr><td>第25-26天</td><td>动作细节打磨</td><td>每天50分钟</td><td>动作精准</td></tr>
+<tr><td>第27-28天</td><td>完整表演练习</td><td>每天45分钟</td><td>准备展示</td></tr>
+</table>
+
+💡 <strong>温馨提示：</strong>
+• 每天练习30-60分钟为宜
+• 注意动作要领和节奏把握
+• 及时记录学习过程中的问题
+• 建议每周至少练习5天
+• 保持积极的学习心态
+
+您可以告诉我您的学习基础和时间安排，我可以为您定制更详细的学习计划！`;
+        }
+
+        function getAIResponse(question) {
+            const lowerQuestion = question.toLowerCase();
+            
+            for (const [key, value] of Object.entries(danceKnowledge)) {
+                if (lowerQuestion.includes(key)) {
+                    if (lowerQuestion.includes('要领') || lowerQuestion.includes('步骤') || lowerQuestion.includes('教学') || lowerQuestion.includes('动作')) {
+                        return value.moves;
+                    } else if (lowerQuestion.includes('起源') || lowerQuestion.includes('来源') || lowerQuestion.includes('历史')) {
+                        return value.origin;
+                    } else if (lowerQuestion.includes('寓意') || lowerQuestion.includes('意义') || lowerQuestion.includes('含义') || lowerQuestion.includes('文化')) {
+                        return value.meaning;
+                    }
+                }
+            }
+            
+            if (lowerQuestion.includes('传承') || lowerQuestion.includes('重要')) {
+                return '非遗舞蹈传承具有重要意义：\n\n<strong>文化价值：</strong>非遗舞蹈是中华民族的文化瑰宝，承载着丰富的历史文化内涵。\n\n<strong>精神传承：</strong>通过舞蹈传承，可以让后代了解和感受传统文化的魅力。\n\n<strong>社会价值：</strong>非遗舞蹈的传承有助于增强民族凝聚力，促进文化交流。\n\n<strong>保护措施：</strong>包括数字化记录、传承人培养、教育推广等方式。';
+            }
+            
+            if (lowerQuestion.includes('服饰') || lowerQuestion.includes('服装')) {
+                return '土家族传统舞蹈服饰特点：\n\n<strong>颜色：</strong>以深蓝、黑色为主，配以红色、绿色的装饰。\n\n<strong>图案：</strong>服饰上绣有土家族特色的花纹，如蜘蛛花、八角花等。\n\n<strong>配饰：</strong>头上戴银饰，胸前挂银牌，腰间系绣花腰带。\n\n<strong>材质：</strong>多为土家族自织的土布，质地朴实。';
+            }
+            
+            if (lowerQuestion.includes('学习计划') || lowerQuestion.includes('制定计划') || lowerQuestion.includes('计划表') || lowerQuestion.includes('课程安排')) {
+                return getLearningPlan();
+            }
+            
+            return '抱歉，我不太理解您的问题。您可以尝试询问：\n\n• 肉连响的动作要领\n• 摆手舞的起源\n• 土家族舞蹈的文化寓意\n• 为我制定一个学习计划表\n• 单摆动作的步骤教学\n\n我会尽力为您解答！';
+        }
+
+        function askQuestion(question) {
+            document.getElementById('ai-input').value = question;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('ai-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const chatMessages = document.getElementById('chat-messages');
+            const sendBtn = document.getElementById('ai-send-btn');
+            
+            // 添加用户消息
+            const userMessage = document.createElement('div');
+            userMessage.className = 'ai-message user';
+            userMessage.innerHTML = `
+                <div class="ai-message-header">
+                    <div class="ai-message-avatar">👤</div>
+                    <span class="ai-message-sender">您</span>
+                </div>
+                <div class="ai-message-content">
+                    <p>${message}</p>
+                </div>
+            `;
+            chatMessages.appendChild(userMessage);
+            
+            // 清空输入框
+            input.value = '';
+            
+            // 禁用发送按钮
+            sendBtn.disabled = true;
+            
+            // 滚动到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 添加打字指示器
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'ai-message';
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.innerHTML = `
+                <div class="ai-message-header">
+                    <div class="ai-message-avatar">🧚</div>
+                    <span class="ai-message-sender">灵域精灵</span>
+                </div>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 模拟AI响应延迟
+            setTimeout(() => {
+                // 移除打字指示器
+                document.getElementById('typing-indicator').remove();
+                
+                // 获取AI响应
+                const response = getAIResponse(message);
+                
+                // 添加AI消息
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'ai-message';
+                aiMessage.innerHTML = `
+                    <div class="ai-message-header">
+                        <div class="ai-message-avatar">🧚</div>
+                        <span class="ai-message-sender">灵域精灵</span>
+                    </div>
+                    <div class="ai-message-content">
+                        <p>${response.replace(/\n/g, '<br>').replace(/<strong>/g, '<strong>').replace(/<\/strong>/g, '</strong>').replace(/<table class="learning-plan-table">/g, '<table class="learning-plan-table">').replace(/<\/table>/g, '</table>').replace(/<tr>/g, '<tr>').replace(/<\/tr>/g, '</tr>').replace(/<th>/g, '<th>').replace(/<\/th>/g, '</th>').replace(/<td>/g, '<td>').replace(/<\/td>/g, '</td>')}</p>
+                    </div>
+                `;
+                chatMessages.appendChild(aiMessage);
+                
+                // 启用发送按钮
+                sendBtn.disabled = false;
+                
+                // 滚动到底部
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1500);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 互动体验功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const webcam = document.getElementById('webcam');
+            const skeleton = document.getElementById('skeleton');
+            const cameraPrompt = document.getElementById('camera-prompt');
+            const testCameraBtn = document.getElementById('test-camera');
+            const startPracticeBtn = document.getElementById('start-practice');
+            const completionPanel = document.getElementById('completion-panel');
+            const progressCircle = document.getElementById('progress-circle');
+
+            // 测试摄像头
+            testCameraBtn.addEventListener('click', function() {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(stream) {
+                        webcam.srcObject = stream;
+                        cameraPrompt.style.display = 'none';
+                        drawSkeleton();
+                    })
+                    .catch(function(error) {
+                        console.error('摄像头访问失败:', error);
+                        alert('无法访问摄像头，请检查权限设置');
+                    });
+            });
+
+            // 开始跟练
+            let isPracticing = false;
+            startPracticeBtn.addEventListener('click', function() {
+                if (!isPracticing) {
+                    isPracticing = true;
+                    startPracticeBtn.textContent = '练习中...';
+                    startPracticeBtn.style.backgroundColor = '#ff9800';
+                    
+                    let score = 0;
+                    const scoreInterval = setInterval(function() {
+                        score += Math.random() * 5;
+                        if (score >= 100) {
+                            score = 100;
+                            clearInterval(scoreInterval);
+                            setTimeout(function() {
+                                isPracticing = false;
+                                startPracticeBtn.textContent = '开始跟练';
+                                startPracticeBtn.style.backgroundColor = '#ffd700';
+                                completionPanel.style.display = 'block';
+                            }, 1000);
+                        }
+                        updateMatchScore(score);
+                    }, 500);
+                } else {
+                    isPracticing = false;
+                    startPracticeBtn.textContent = '开始跟练';
+                    startPracticeBtn.style.backgroundColor = '#ffd700';
+                }
+            });
+
+            // 更新匹配度
+            function updateMatchScore(score) {
+                const percentage = Math.round(score);
+                const circumference = 2 * Math.PI * 45;
+                const offset = circumference - (percentage / 100) * circumference;
+                progressCircle.style.strokeDashoffset = offset;
+                
+                if (percentage < 60) {
+                    progressCircle.style.stroke = '#f44336';
+                } else if (percentage < 80) {
+                    progressCircle.style.stroke = '#ff9800';
+                } else {
+                    progressCircle.style.stroke = '#4caf50';
+                }
+                
+                const scoreText = progressCircle.nextElementSibling;
+                scoreText.textContent = percentage + '%';
+            }
+
+            // 模拟骨骼绘制
+            function drawSkeleton() {
+                const ctx = skeleton.getContext('2d');
+                
+                function draw() {
+                    ctx.clearRect(0, 0, skeleton.width, skeleton.height);
+                    
+                    const points = [
+                        { x: 50, y: 20 },
+                        { x: 40, y: 35 },
+                        { x: 60, y: 35 },
+                        { x: 35, y: 50 },
+                        { x: 65, y: 50 },
+                        { x: 30, y: 65 },
+                        { x: 70, y: 65 },
+                        { x: 45, y: 50 },
+                        { x: 45, y: 65 },
+                        { x: 40, y: 80 },
+                        { x: 50, y: 80 },
+                        { x: 35, y: 95 },
+                        { x: 55, y: 95 }
+                    ];
+                    
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    ctx.lineTo(points[7].x, points[7].y);
+                    ctx.lineTo(points[8].x, points[8].y);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(points[1].x, points[1].y);
+                    ctx.lineTo(points[3].x, points[3].y);
+                    ctx.lineTo(points[5].x, points[5].y);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(points[2].x, points[2].y);
+                    ctx.lineTo(points[4].x, points[4].y);
+                    ctx.lineTo(points[6].x, points[6].y);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(points[8].x, points[8].y);
+                    ctx.lineTo(points[9].x, points[9].y);
+                    ctx.lineTo(points[11].x, points[11].y);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(points[8].x, points[8].y);
+                    ctx.lineTo(points[10].x, points[10].y);
+                    ctx.lineTo(points[12].x, points[12].y);
+                    ctx.stroke();
+                    
+                    points.forEach(point => {
+                        ctx.fillStyle = '#f44336';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                    
+                    requestAnimationFrame(draw);
+                }
+                
+                draw();
+            }
+
+            // 重新开始按钮
+            const restartBtn = completionPanel.querySelector('.btn-secondary');
+            restartBtn.addEventListener('click', function() {
+                completionPanel.style.display = 'none';
+                updateMatchScore(0);
+            });
+
+            // 保存成绩按钮
+            const saveBtn = completionPanel.querySelector('.btn-primary');
+            saveBtn.addEventListener('click', function() {
+                alert('成绩已保存');
+            });
+
+            // VR了解详情按钮
+            const vrBtn = document.querySelector('.btn-secondary:last-child');
+            vrBtn.addEventListener('click', function() {
+                alert('VR沉浸体验需要VR头显，线下体验点合作中');
+            });
+        });
+
+        // 页面加载时检查用户模式
+        window.onload = checkUserMode;
+    </script>
+</body>
+</html>

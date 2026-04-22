@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorfey - 创作辅助工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #0A0A0F;
+            color: #E6E6E9;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(12px);
+            height: 72px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: #0A0A0F;
+            backdrop-filter: none;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffd700;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: #E6E6E9;
+            text-decoration: none;
+            font-size: 16px;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .login-btn {
+            padding: 6px 16px;
+            border: 1px solid #ffd700;
+            border-radius: 32px;
+            background: transparent;
+            color: #ffd700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 创作辅助工具 */
+        .creator-tool {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部工具栏 */
+        .toolbar {
+            background: #13131A;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2A2A35;
+        }
+
+        .toolbar-left h2 {
+            color: #ffd700;
+            font-size: 24px;
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #E6E6E9;
+            border: 1px solid #E6E6E9;
+        }
+
+        .btn:hover {
+            transform: scale(0.98);
+        }
+
+        /* 三列布局 */
+        .workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* 左侧动作词汇库 */
+        .action-library {
+            width: 280px;
+            background: #13131A;
+            border-right: 1px solid #2A2A35;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .library-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        .accordion {
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion-header {
+            background: #1A1A24;
+            padding: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .accordion-header:hover {
+            background: #252530;
+        }
+
+        .accordion-header.active {
+            background: #252530;
+        }
+
+        .accordion-content {
+            padding: 0.75rem;
+            background: #13131A;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #2A2A35;
+            cursor: grab;
+            transition: all 0.3s ease;
+        }
+
+        .action-item:hover {
+            background: #1A1A24;
+        }
+
+        .action-gif {
+            width: 40px;
+            height: 40px;
+            background: #2A2A35;
+            border-radius: 4px;
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-info {
+            flex: 1;
+        }
+
+        .action-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .action-duration {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 中间预览窗口 */
+        .preview-window {
+            flex: 1;
+            background: #13131A;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            border-left: 1px solid #2A2A35;
+            border-right: 1px solid #2A2A35;
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        .preview-canvas {
+            flex: 1;
+            background: #0A0A0F;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #preview-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #preview-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .video-control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .video-control-btn:hover {
+            background: rgba(255, 215, 0, 0.7);
+        }
+
+        .video-progress {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .video-progress-bar {
+            height: 100%;
+            background: #ffd700;
+            border-radius: 2px;
+        }
+
+        .video-time {
+            font-size: 12px;
+            color: white;
+        }
+
+        .speed-control {
+            font-size: 12px;
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+        }
+
+        /* 右侧时间轴编辑区 */
+        .timeline-editor {
+            width: 320px;
+            background: #13131A;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffd700;
+        }
+
+        .timeline-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .timeline-container {
+            flex: 1;
+            background: #0A0A0F;
+            border-radius: 4px;
+            padding: 1rem;
+            position: relative;
+            overflow: auto;
+        }
+
+        .timeline-track {
+            height: 60px;
+            background: #1A1A24;
+            border-radius: 4px;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .timeline-ruler {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            display: flex;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .ruler-mark {
+            flex: 1;
+            position: relative;
+        }
+
+        .ruler-mark::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 1px;
+            height: 5px;
+            background: #444;
+        }
+
+        .ruler-mark::after {
+            content: attr(data-time);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: red;
+            z-index: 10;
+        }
+
+        .action-block {
+            position: absolute;
+            top: 10px;
+            height: 40px;
+            background: rgba(197, 90, 31, 0.5);
+            border: 1px solid #C55A1F;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #E6E6E9;
+            cursor: move;
+        }
+
+        .action-block:hover {
+            border-color: #ffd700;
+        }
+
+        .action-block.selected {
+            border: 2px solid #ffd700;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .action-library {
+                width: 240px;
+            }
+            
+            .timeline-editor {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .workspace {
+                flex-direction: column;
+            }
+            
+            .action-library {
+                width: 100%;
+                height: 200px;
+                border-right: none;
+                border-bottom: 1px solid #2A2A35;
+            }
+            
+            .preview-window {
+                width: 100%;
+                flex: 2;
+                border-left: none;
+                border-right: none;
+                border-bottom: 1px solid #2A2A35;
+            }
+            
+            .timeline-editor {
+                width: 100%;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="window.location.href='index.html'">Lorfey</div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="assets.html">数字资产库</a></li>
+                <li><a href="learning.html">互动体验</a></li>
+                <li><a href="digital-characters.html">数字人皮肤</a></li>
+                <li><a href="choreography.html">创作辅助</a></li>
+                <li><a href="profile.html">我的</a></li>
+                <li id="admin-link"><a href="admin.html">后台管理</a></li>
+            </ul>
+            <div class="user-actions">
+                <button class="login-btn" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 创作辅助工具 -->
+        <div class="creator-tool">
+            <!-- 顶部工具栏 -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <h2>创作辅助工具</h2>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn btn-primary" onclick="saveProject()">保存项目</button>
+                    <button class="btn btn-secondary" onclick="clearTimeline()">清空</button>
+                    <button class="btn btn-secondary" onclick="importVideo()">导入视频</button>
+                    <button class="btn btn-secondary" onclick="importJSON()">导入 JSON</button>
+                    <button class="btn btn-secondary" onclick="exportJSON()">导出 JSON</button>
+                </div>
+            </div>
+            
+            <!-- 三列布局 -->
+            <div class="workspace">
+                <!-- 左侧动作词汇库 -->
+                <div class="action-library">
+                    <div class="library-title">动作词汇库</div>
+                    
+                    <!-- 舞蹈分类 1 -->
+                    <div class="accordion">
+                        <div class="accordion-header active" onclick="toggleAccordion(this)">
+                            <span>摆手舞基本套路</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="accordion-content" style="display: block;">
+                            <div class="action-item" draggable="true" data-action-id="action1" data-video="">
+                                <div class="action-gif">💃</div>
+                                <div class="action-info">
+                                    <div class="action-name">单摆</div>
+                                    <div class="action-duration">1.2s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action2" data-video="">
+                                <div class="action-gif">🕺</div>
+                                <div class="action-info">
+                                    <div class="action-name">双摆</div>
+                                    <div class="action-duration">1.5s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action3" data-video="">
+                                <div class="action-gif">🎭</div>
+                                <div class="action-info">
+                                    <div class="action-name">转身</div>
+                                    <div class="action-duration">0.8s</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 舞蹈分类 2 -->
+                    <div class="accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>肉连响十连响</span>
+                            <span>▶</span>
+                        </div>
+                        <div class="accordion-content" style="display: none;">
+                            <div class="action-item" draggable="true" data-action-id="action11" data-video="十连响总览.mp4">
+                                <div class="action-gif">🎬</div>
+                                <div class="action-info">
+                                    <div class="action-name">肉连响·十连响总览</div>
+                                    <div class="action-duration">3.0s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action6" data-video="手.mp4">
+                                <div class="action-gif">👋</div>
+                                <div class="action-info">
+                                    <div class="action-name">肉连响·手部动作</div>
+                                    <div class="action-duration">2.0s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action7" data-video="头.mp4">
+                                <div class="action-gif">👤</div>
+                                <div class="action-info">
+                                    <div class="action-name">肉连响·头部动作</div>
+                                    <div class="action-duration">1.5s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action8" data-video="侧腰.mp4">
+                                <div class="action-gif">💪</div>
+                                <div class="action-info">
+                                    <div class="action-name">肉连响·侧腰动作</div>
+                                    <div class="action-duration">1.8s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action9" data-video="大腿.mp4">
+                                <div class="action-gif">🦵</div>
+                                <div class="action-info">
+                                    <div class="action-name">肉连响·大腿动作</div>
+                                    <div class="action-duration">2.2s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action10" data-video="脚.mp4">
+                                <div class="action-gif">👟</div>
+                                <div class="action-info">
+                                    <div class="action-name">肉连响·脚部动作</div>
+                                    <div class="action-duration">1.6s</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 舞蹈分类 3 -->
+                    <div class="accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>苗族舞蹈</span>
+                            <span>▶</span>
+                        </div>
+                        <div class="accordion-content" style="display: none;">
+                            <div class="action-item" draggable="true" data-action-id="action4" data-video="">
+                                <div class="action-gif">💃</div>
+                                <div class="action-info">
+                                    <div class="action-name">芦笙舞</div>
+                                    <div class="action-duration">2.0s</div>
+                                </div>
+                            </div>
+                            <div class="action-item" draggable="true" data-action-id="action5" data-video="">
+                                <div class="action-gif">🕺</div>
+                                <div class="action-info">
+                                    <div class="action-name">鼓舞</div>
+                                    <div class="action-duration">1.8s</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 中间预览窗口 -->
+                <div class="preview-window">
+                    <div class="preview-title">预览窗口</div>
+                    <div class="preview-canvas">
+                        <canvas id="preview-canvas"></canvas>
+                        <video id="preview-video" style="display: none;"></video>
+                        <div class="video-controls" id="video-controls" style="display: none;">
+                            <button class="video-control-btn" onclick="togglePlay()">
+                                <span id="play-icon">▶</span>
+                            </button>
+                            <div class="video-progress" onclick="seekVideo(event)">
+                                <div class="video-progress-bar" id="video-progress-bar"></div>
+                            </div>
+                            <span class="video-time" id="video-time">0:00 / 0:00</span>
+                            <select class="speed-control" onchange="changePlaybackSpeed(this.value)">
+                                <option value="0.25">0.25x</option>
+                                <option value="0.5">0.5x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="2">2x</option>
+                                <option value="4">4x</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧时间轴编辑区 -->
+                <div class="timeline-editor">
+                    <div class="timeline-header">
+                        <div class="timeline-title">时间轴编辑区</div>
+                        <div class="timeline-controls">
+                            <div class="zoom-controls">
+                                <button class="btn btn-secondary" onclick="setPlaybackSpeed(0.25)">0.25x</button>
+                                <button class="btn btn-secondary" onclick="setPlaybackSpeed(0.5)">0.5x</button>
+                                <button class="btn btn-secondary" onclick="setPlaybackSpeed(1)">1x</button>
+                                <button class="btn btn-secondary" onclick="setPlaybackSpeed(2)">2x</button>
+                                <button class="btn btn-secondary" onclick="setPlaybackSpeed(4)">4x</button>
+                            </div>
+                            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="playTimeline()">播放</button>
+                                <button class="btn btn-secondary" onclick="pauseTimeline()">暂停</button>
+                                <button class="btn btn-secondary" onclick="resetTimeline()">重置</button>
+                                <button class="btn btn-secondary" onclick="previousFrame()">上一帧</button>
+                                <button class="btn btn-secondary" onclick="nextFrame()">下一帧</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-container">
+                        <div class="timeline-ruler">
+                            <div class="ruler-mark" data-time="0s"></div>
+                            <div class="ruler-mark" data-time="1s"></div>
+                            <div class="ruler-mark" data-time="2s"></div>
+                            <div class="ruler-mark" data-time="3s"></div>
+                            <div class="ruler-mark" data-time="4s"></div>
+                            <div class="ruler-mark" data-time="5s"></div>
+                            <div class="ruler-mark" data-time="6s"></div>
+                            <div class="ruler-mark" data-time="7s"></div>
+                            <div class="ruler-mark" data-time="8s"></div>
+                            <div class="ruler-mark" data-time="9s"></div>
+                            <div class="ruler-mark" data-time="10s"></div>
+                        </div>
+                        <div class="timeline-track" id="timelineTrack">
+                            <div class="playhead" id="playhead"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 检查用户登录状态
+        function checkLoginStatus() {
+            const userInfo = localStorage.getItem('userInfo');
+            if (!userInfo) {
+                // 如果没有登录信息，重定向到登录页面
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 检查用户模式
+        function checkUserMode() {
+            // 先检查登录状态
+            if (!checkLoginStatus()) {
+                return;
+            }
+            
+            const userMode = localStorage.getItem('userMode');
+            console.log('User mode:', userMode);
+            if (!userMode) {
+                // 如果没有选择模式，默认设置为用户端
+                localStorage.setItem('userMode', 'user');
+                window.location.reload();
+                return;
+            }
+            
+            // 立即隐藏后台管理链接，避免闪频
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = 'none';
+            }
+            
+            // 延迟执行，确保DOM元素已完全加载
+            setTimeout(() => {
+                const adminLink = document.getElementById('admin-link');
+                console.log('Admin link element:', adminLink);
+                if (adminLink) {
+                    if (userMode === 'user') {
+                        adminLink.style.display = 'none';
+                    } else {
+                        adminLink.style.display = 'block';
+                    }
+                    console.log('Admin link display:', adminLink.style.display);
+                }
+            }, 100); // 延迟执行，确保DOM元素已加载
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('userMode');
+            localStorage.removeItem('userInfo');
+            window.location.href = 'login.html';
+        }
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 手风琴功能
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('span:last-child');
+            
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                icon.textContent = '▶';
+                header.classList.remove('active');
+            } else {
+                content.style.display = 'block';
+                icon.textContent = '▼';
+                header.classList.add('active');
+            }
+        }
+
+        // 时间轴功能
+        let actionBlocks = [];
+        let isPlaying = false;
+        let currentTime = 0;
+        let animationId = null;
+        let currentSpeed = 1;
+
+        // 视频相关变量
+        let currentVideo = null;
+        let isVideoPlaying = false;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initDragAndDrop();
+            initPlayhead();
+            initPreview();
+            initVideoControls();
+        });
+
+        // 拖拽功能
+        function initDragAndDrop() {
+            const actionItems = document.querySelectorAll('.action-item');
+            const timelineTrack = document.getElementById('timelineTrack');
+
+            actionItems.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.dataset.actionId);
+                    e.dataTransfer.setData('actionName', this.querySelector('.action-name').textContent);
+                    e.dataTransfer.setData('duration', this.querySelector('.action-duration').textContent);
+                    this.style.opacity = '0.5';
+                });
+
+                item.addEventListener('dragend', function() {
+                    this.style.opacity = '1';
+                });
+
+                // 添加点击事件，预览视频
+                item.addEventListener('click', function() {
+                    const videoSrc = this.dataset.video;
+                    console.log('点击了动作项，视频路径:', videoSrc);
+                    if (videoSrc) {
+                        const video = document.getElementById('preview-video');
+                        const canvas = document.getElementById('preview-canvas');
+                        const videoControls = document.getElementById('video-controls');
+                        
+                        console.log('视频元素:', video);
+                        console.log('画布元素:', canvas);
+                        console.log('控制栏元素:', videoControls);
+                        
+                        video.src = videoSrc;
+                        video.style.display = 'block';
+                        canvas.style.display = 'none';
+                        videoControls.style.display = 'flex';
+                        
+                        // 尝试自动播放
+                        video.load();
+                        video.play().catch(error => {
+                            console.log('自动播放失败:', error);
+                        });
+                        
+                        currentVideo = video;
+                        console.log('视频设置完成:', currentVideo);
+                    } else {
+                        console.log('该动作项没有视频路径');
+                    }
+                });
+            });
+
+            timelineTrack.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+
+            timelineTrack.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const actionId = e.dataTransfer.getData('text/plain');
+                const actionName = e.dataTransfer.getData('actionName');
+                const duration = parseFloat(e.dataTransfer.getData('duration'));
+                
+                const rect = timelineTrack.getBoundingClientRect();
+                const left = e.clientX - rect.left;
+                const startTime = (left / rect.width) * 10;
+                
+                createActionBlock(actionId, actionName, startTime, duration);
+            });
+        }
+
+        // 创建动作块
+        function createActionBlock(actionId, actionName, startTime, duration) {
+            const timelineTrack = document.getElementById('timelineTrack');
+            const rect = timelineTrack.getBoundingClientRect();
+            const blockWidth = (duration / 10) * rect.width;
+            
+            const actionBlock = document.createElement('div');
+            actionBlock.className = 'action-block';
+            actionBlock.style.left = `${(startTime / 10) * 100}%`;
+            actionBlock.style.width = `${(duration / 10) * 100}%`;
+            actionBlock.textContent = actionName;
+            actionBlock.dataset.actionId = actionId;
+            actionBlock.dataset.startTime = startTime;
+            actionBlock.dataset.duration = duration;
+            
+            // 添加点击事件
+            actionBlock.addEventListener('click', function() {
+                selectActionBlock(this);
+            });
+            
+            // 添加右键删除
+            actionBlock.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                this.remove();
+                updateActionBlocks();
+            });
+            
+            timelineTrack.appendChild(actionBlock);
+            updateActionBlocks();
+        }
+
+        // 更新动作块数组
+        function updateActionBlocks() {
+            const blocks = document.querySelectorAll('.action-block');
+            actionBlocks = Array.from(blocks).map(block => ({
+                id: block.dataset.actionId,
+                name: block.textContent,
+                startTime: parseFloat(block.dataset.startTime),
+                duration: parseFloat(block.dataset.duration)
+            }));
+        }
+
+        // 选择动作块
+        function selectActionBlock(block) {
+            // 移除其他块的选中状态
+            document.querySelectorAll('.action-block').forEach(b => {
+                b.classList.remove('selected');
+            });
+            // 添加当前块的选中状态
+            block.classList.add('selected');
+        }
+
+        // 播放头功能
+        function initPlayhead() {
+            const playhead = document.getElementById('playhead');
+            const timelineTrack = document.getElementById('timelineTrack');
+            let isDragging = false;
+
+            playhead.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    const rect = timelineTrack.getBoundingClientRect();
+                    let left = e.clientX - rect.left;
+                    left = Math.max(0, Math.min(left, rect.width));
+                    const percentage = (left / rect.width) * 100;
+                    playhead.style.left = `${percentage}%`;
+                    currentTime = (percentage / 100) * 10;
+                    
+                    // 更新视频时间
+                    if (currentVideo) {
+                        currentVideo.currentTime = currentTime;
+                    }
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+
+            // 点击时间轴空白区域
+            timelineTrack.addEventListener('click', function(e) {
+                if (!e.target.closest('.action-block') && !e.target.closest('.playhead')) {
+                    const rect = timelineTrack.getBoundingClientRect();
+                    let left = e.clientX - rect.left;
+                    left = Math.max(0, Math.min(left, rect.width));
+                    const percentage = (left / rect.width) * 100;
+                    playhead.style.left = `${percentage}%`;
+                    currentTime = (percentage / 100) * 10;
+                    
+                    // 更新视频时间
+                    if (currentVideo) {
+                        currentVideo.currentTime = currentTime;
+                    }
+                }
+            });
+        }
+
+        // 预览功能
+        function initPreview() {
+            const canvas = document.getElementById('preview-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置canvas尺寸
+            function resizeCanvas() {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                drawStickFigure();
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 绘制火柴人
+            function drawStickFigure() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                
+                // 头部
+                ctx.beginPath();
+                ctx.arc(centerX, centerY - 60, 20, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 身体
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY - 40);
+                ctx.lineTo(centerX, centerY + 60);
+                ctx.stroke();
+                
+                // 手臂
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY - 20);
+                ctx.lineTo(centerX - 40, centerY + 20);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY - 20);
+                ctx.lineTo(centerX + 40, centerY + 20);
+                ctx.stroke();
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY + 60);
+                ctx.lineTo(centerX - 30, centerY + 100);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY + 60);
+                ctx.lineTo(centerX + 30, centerY + 100);
+                ctx.stroke();
+            }
+            
+            drawStickFigure();
+        }
+
+        // 视频控制功能
+        function initVideoControls() {
+            const video = document.getElementById('preview-video');
+            const videoControls = document.getElementById('video-controls');
+            const progressBar = document.getElementById('video-progress-bar');
+            const videoTime = document.getElementById('video-time');
+            const playIcon = document.getElementById('play-icon');
+
+            video.addEventListener('timeupdate', function() {
+                const currentTime = video.currentTime;
+                const duration = video.duration;
+                const progress = (currentTime / duration) * 100;
+                progressBar.style.width = `${progress}%`;
+                videoTime.textContent = formatTime(currentTime) + ' / ' + formatTime(duration);
+            });
+
+            video.addEventListener('ended', function() {
+                playIcon.textContent = '▶';
+                isVideoPlaying = false;
+            });
+        }
+
+        // 格式化时间
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 导入视频
+        function importVideo() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'video/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const video = document.getElementById('preview-video');
+                    const canvas = document.getElementById('preview-canvas');
+                    const videoControls = document.getElementById('video-controls');
+                    
+                    video.src = URL.createObjectURL(file);
+                    video.style.display = 'block';
+                    canvas.style.display = 'none';
+                    videoControls.style.display = 'flex';
+                    
+                    currentVideo = video;
+                }
+            };
+            input.click();
+        }
+
+        // 视频控制
+        function togglePlay() {
+            const video = document.getElementById('preview-video');
+            const playIcon = document.getElementById('play-icon');
+            
+            if (video.paused) {
+                video.play();
+                playIcon.textContent = '⏸';
+                isVideoPlaying = true;
+            } else {
+                video.pause();
+                playIcon.textContent = '▶';
+                isVideoPlaying = false;
+            }
+        }
+
+        function seekVideo(event) {
+            const video = document.getElementById('preview-video');
+            const progress = document.querySelector('.video-progress');
+            const rect = progress.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const percentage = (clickX / rect.width) * 100;
+            const seekTime = (percentage / 100) * video.duration;
+            
+            video.currentTime = seekTime;
+        }
+
+        function changePlaybackSpeed(speed) {
+            const video = document.getElementById('preview-video');
+            video.playbackRate = parseFloat(speed);
+            currentSpeed = parseFloat(speed);
+        }
+
+        // 时间轴控制
+        function playTimeline() {
+            if (isPlaying) return;
+            isPlaying = true;
+            animatePlayhead();
+            
+            // 播放视频
+            if (currentVideo) {
+                currentVideo.play();
+                isVideoPlaying = true;
+                document.getElementById('play-icon').textContent = '⏸';
+            }
+        }
+
+        function pauseTimeline() {
+            isPlaying = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            // 暂停视频
+            if (currentVideo) {
+                currentVideo.pause();
+                isVideoPlaying = false;
+                document.getElementById('play-icon').textContent = '▶';
+            }
+        }
+
+        function resetTimeline() {
+            isPlaying = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            currentTime = 0;
+            document.getElementById('playhead').style.left = '0%';
+            
+            // 重置视频
+            if (currentVideo) {
+                currentVideo.currentTime = 0;
+                currentVideo.pause();
+                isVideoPlaying = false;
+                document.getElementById('play-icon').textContent = '▶';
+            }
+        }
+
+        function setPlaybackSpeed(speed) {
+            currentSpeed = speed;
+            if (currentVideo) {
+                currentVideo.playbackRate = speed;
+                document.querySelector('.speed-control').value = speed;
+            }
+        }
+
+        function previousFrame() {
+            // 逐帧倒退
+            const frameTime = 1/30; // 假设30fps
+            currentTime = Math.max(0, currentTime - frameTime);
+            document.getElementById('playhead').style.left = `${(currentTime / 10) * 100}%`;
+            
+            if (currentVideo) {
+                currentVideo.currentTime = Math.max(0, currentVideo.currentTime - frameTime);
+            }
+        }
+
+        function nextFrame() {
+            // 逐帧前进
+            const frameTime = 1/30; // 假设30fps
+            currentTime = Math.min(10, currentTime + frameTime);
+            document.getElementById('playhead').style.left = `${(currentTime / 10) * 100}%`;
+            
+            if (currentVideo) {
+                currentVideo.currentTime = Math.min(currentVideo.duration, currentVideo.currentTime + frameTime);
+            }
+        }
+
+        function animatePlayhead() {
+            if (!isPlaying) return;
+            
+            currentTime += 0.1 * currentSpeed;
+            if (currentTime > 10) {
+                currentTime = 0;
+            }
+            
+            const percentage = (currentTime / 10) * 100;
+            document.getElementById('playhead').style.left = `${percentage}%`;
+            
+            animationId = requestAnimationFrame(animatePlayhead);
+        }
+
+        // 项目管理
+        function saveProject() {
+            updateActionBlocks();
+            const projectData = {
+                actions: actionBlocks,
+                duration: 10
+            };
+            
+            // 模拟保存到服务器
+            console.log('保存项目:', projectData);
+            alert('项目保存成功！');
+        }
+
+        function clearTimeline() {
+            const blocks = document.querySelectorAll('.action-block');
+            blocks.forEach(block => block.remove());
+            actionBlocks = [];
+            alert('时间轴已清空！');
+        }
+
+        function importJSON() {
+            // 模拟导入JSON
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            // 清空现有动作块
+                            clearTimeline();
+                            // 添加导入的动作块
+                            data.actions.forEach(action => {
+                                createActionBlock(action.id, action.name, action.startTime, action.duration);
+                            });
+                            alert('JSON导入成功！');
+                        } catch (error) {
+                            alert('JSON格式错误！');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function exportJSON() {
+            updateActionBlocks();
+            const projectData = {
+                actions: actionBlocks.map(action => ({
+                    actionId: action.id,
+                    startTime: action.startTime,
+                    duration: action.duration
+                })),
+                duration: 10
+            };
+            
+            const jsonString = JSON.stringify(projectData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dance-choreography.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 页面加载时检查用户模式
+        window.onload = checkUserMode;
+    </script>
+</body>
+</html>

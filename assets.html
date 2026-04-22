@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorfey - 数字资产库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #0A0A0F;
+            color: #E6E6E9;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(12px);
+            height: 72px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: #0A0A0F;
+            backdrop-filter: none;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffd700;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: #E6E6E9;
+            text-decoration: none;
+            font-size: 16px;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .login-btn {
+            padding: 6px 16px;
+            border: 1px solid #ffd700;
+            border-radius: 32px;
+            background: transparent;
+            color: #ffd700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+        }
+
+        /* 功能模块 */
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #ffd700;
+        }
+
+        /* 资产库 */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .asset-card {
+            background: #13131A;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #2A2A35;
+        }
+
+        .asset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            border-color: #ffd700;
+        }
+
+        .asset-image {
+            width: 100%;
+            height: 200px;
+            background-color: #0A0A0F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .asset-info {
+            padding: 1.5rem;
+        }
+
+        .asset-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #ffd700;
+        }
+
+        .asset-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+
+        .asset-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #E6E6E9;
+            border: 1px solid #E6E6E9;
+        }
+
+        .btn:hover {
+            transform: scale(0.98);
+        }
+
+        /* 搜索框 */
+        .search-container {
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            padding-right: 3rem;
+            background: #13131A;
+            border: 1px solid #2A2A35;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #E6E6E9;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            padding: 0 1rem;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #ff9800;
+        }
+
+        /* 筛选面板 */
+        .filter-panel {
+            background: #13131A;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            border: 1px solid #2A2A35;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .filter-header h3 {
+            color: #ffd700;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #E6E6E9;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 0.5rem;
+            background: #0A0A0F;
+            border: 1px solid #2A2A35;
+            border-radius: 4px;
+            color: #E6E6E9;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .category-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .filter-actions {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+
+        /* 详情页模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #13131A;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid #2A2A35;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h3 {
+            color: #ffd700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #E6E6E9;
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .modal-info h4 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .modal-info p {
+            margin: 1rem 0;
+            color: #E6E6E9;
+        }
+
+        .modal-details {
+            margin: 1rem 0;
+            color: #999;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="window.location.href='index.html'">Lorfey</div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="assets.html">数字资产库</a></li>
+                <li><a href="learning.html">互动体验</a></li>
+                <li><a href="digital-characters.html">数字人皮肤</a></li>
+                <li><a href="choreography.html">创作辅助</a></li>
+                <li><a href="profile.html">我的</a></li>
+                <li id="admin-link"><a href="admin.html">后台管理</a></li>
+            </ul>
+            <div class="user-actions">
+                <button class="login-btn" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 数字资产库 -->
+        <section id="assets" class="section">
+            <div class="section-container">
+                <h2 class="section-title">数字资产库</h2>
+                
+                <!-- 搜索框 -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索舞蹈、传承人、文化关键词……">
+                        <button class="search-btn">搜索</button>
+                    </div>
+                </div>
+                
+                <!-- 筛选面板 -->
+                <div class="filter-panel">
+                    <div class="filter-header">
+                        <h3>筛选条件</h3>
+                        <button id="reset-filters" class="btn btn-secondary">重置</button>
+                    </div>
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label class="filter-label">地域</label>
+                            <select class="filter-select">
+                                <option>全部</option>
+                                <option>北京市</option>
+                                <option>天津市</option>
+                                <option>河北省</option>
+                                <option>山西省</option>
+                                <option>内蒙古自治区</option>
+                                <option>辽宁省</option>
+                                <option>吉林省</option>
+                                <option>黑龙江省</option>
+                                <option>上海市</option>
+                                <option>江苏省</option>
+                                <option>浙江省</option>
+                                <option>安徽省</option>
+                                <option>福建省</option>
+                                <option>江西省</option>
+                                <option>山东省</option>
+                                <option>河南省</option>
+                                <option>湖北省</option>
+                                <option>湖南省</option>
+                                <option>广东省</option>
+                                <option>广西壮族自治区</option>
+                                <option>海南省</option>
+                                <option>重庆市</option>
+                                <option>四川省</option>
+                                <option>贵州省</option>
+                                <option>云南省</option>
+                                <option>西藏自治区</option>
+                                <option>陕西省</option>
+                                <option>甘肃省</option>
+                                <option>青海省</option>
+                                <option>宁夏回族自治区</option>
+                                <option>新疆维吾尔自治区</option>
+                                <option>香港特别行政区</option>
+                                <option>澳门特别行政区</option>
+                                <option>台湾省</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">舞蹈类别</label>
+                            <div class="category-buttons">
+                                <button class="btn btn-secondary">祭祀类</button>
+                                <button class="btn btn-secondary">庆典类</button>
+                                <button class="btn btn-secondary">劳动类</button>
+                                <button class="btn btn-secondary">礼仪类</button>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">动作特征</label>
+                            <select class="filter-select">
+                                <option>全部</option>
+                                <option>手部动作</option>
+                                <option>腿部动作</option>
+                                <option>全身协调</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">难度</label>
+                            <select class="filter-select">
+                                <option>全部</option>
+                                <option>初级</option>
+                                <option>中级</option>
+                                <option>高级</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">时长</label>
+                            <select class="filter-select">
+                                <option>全部</option>
+                                <option>1分钟以下</option>
+                                <option>1-3分钟</option>
+                                <option>3分钟以上</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button id="apply-filters" class="btn btn-primary">应用筛选</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 结果展示 -->
+                <div class="asset-grid">
+                    <div class="asset-card">
+                        <div class="asset-image">
+                            <video width="100%" height="200" controls>
+                                <source src="肉连响骨骼图.mp4" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                        </div>
+                        <div class="asset-info">
+                            <h3 class="asset-title">肉连响骨骼图</h3>
+                            <div class="asset-meta">
+                                <span>类型：骨骼动画</span>
+                                <span>时长：02:30</span>
+                            </div>
+                            <div class="asset-meta">
+                                <span>传承人：刘守红</span>
+                                <span>发源地：湖北省利川市</span>
+                            </div>
+                            <div class="asset-actions">
+                                <button class="btn btn-primary">学习</button>
+                                <button class="btn btn-secondary">收藏</button>
+                                <button class="btn btn-secondary">详情</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="pagination">
+                    <button class="btn btn-secondary" disabled>上一页</button>
+                    <button class="btn btn-primary">1</button>
+                    <button class="btn btn-secondary">2</button>
+                    <button class="btn btn-secondary">3</button>
+                    <button class="btn btn-secondary">下一页</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 详情页模态框 -->
+        <div id="asset-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>舞蹈详情</h3>
+                    <button id="close-modal" class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <video width="100%" height="300" controls>
+                            <source src="肉连响骨骼图.mp4" type="video/mp4">
+                            您的浏览器不支持视频播放。
+                        </video>
+                    </div>
+                    <div class="modal-info">
+                        <h4>肉连响骨骼图</h4>
+                        <p>肉连响是土家族的传统舞蹈，以其独特的节奏和动作而闻名。本骨骼图展示了舞蹈的基本动作结构，便于学习者理解和掌握。</p>
+                        <div class="modal-details">
+                            <strong>类型：</strong>骨骼动画<br>
+                            <strong>时长：</strong>02:30<br>
+                            <strong>传承人：</strong>刘守红<br>
+                            <strong>发源地：</strong>湖北省利川市<br>
+                            <strong>难度：</strong>中级<br>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-primary">开始学习</button>
+                            <button class="btn btn-secondary">收藏</button>
+                            <button class="btn btn-secondary">分享</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 检查用户登录状态
+        function checkLoginStatus() {
+            const userInfo = localStorage.getItem('userInfo');
+            if (!userInfo) {
+                // 如果没有登录信息，重定向到登录页面
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 检查用户模式
+        function checkUserMode() {
+            // 先检查登录状态
+            if (!checkLoginStatus()) {
+                return;
+            }
+            
+            const userMode = localStorage.getItem('userMode');
+            if (!userMode) {
+                // 如果没有选择模式，默认设置为用户端
+                localStorage.setItem('userMode', 'user');
+                window.location.reload();
+                return;
+            }
+            
+            // 立即隐藏后台管理链接，避免闪频
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = 'none';
+            }
+            
+            // 延迟执行，确保DOM元素已完全加载
+            setTimeout(() => {
+                const adminLink = document.getElementById('admin-link');
+                if (adminLink) {
+                    if (userMode === 'user') {
+                        adminLink.style.display = 'none';
+                    } else {
+                        adminLink.style.display = 'block';
+                    }
+                }
+            }, 100); // 延迟执行，确保DOM元素已加载
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('userMode');
+            localStorage.removeItem('userInfo');
+            window.location.href = 'login.html';
+        }
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 详情页模态框功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('asset-modal');
+            const closeModal = document.getElementById('close-modal');
+            const detailButtons = document.querySelectorAll('.asset-actions button:nth-child(3)');
+
+            // 打开模态框
+            detailButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden'; // 防止背景滚动
+                });
+            });
+
+            // 关闭模态框
+            closeModal.addEventListener('click', function() {
+                modal.style.display = 'none';
+                document.body.style.overflow = ''; // 恢复背景滚动
+            });
+
+            // 点击模态框外部关闭
+            window.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // 筛选面板功能
+            const resetFiltersBtn = document.getElementById('reset-filters');
+            const applyFiltersBtn = document.getElementById('apply-filters');
+            const filters = document.querySelectorAll('.filter-select');
+            const categoryButtons = document.querySelectorAll('.btn-secondary');
+
+            // 舞蹈类别按钮交互
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 切换按钮状态
+                    this.classList.toggle('btn-primary');
+                    this.classList.toggle('btn-secondary');
+                    // 添加点击动画
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // 重置功能
+            resetFiltersBtn.addEventListener('click', function() {
+                // 重置下拉筛选
+                filters.forEach(filter => {
+                    filter.value = '全部';
+                });
+                // 重置类别按钮
+                categoryButtons.forEach(button => {
+                    button.classList.remove('btn-primary');
+                    button.classList.add('btn-secondary');
+                });
+                // 添加重置动画
+                resetFiltersBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    resetFiltersBtn.style.transform = '';
+                }, 150);
+            });
+
+            // 应用筛选功能
+            applyFiltersBtn.addEventListener('click', function() {
+                // 添加应用动画
+                applyFiltersBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    applyFiltersBtn.style.transform = '';
+                }, 150);
+                
+                // 模拟筛选效果
+                const assetCards = document.querySelectorAll('.asset-card');
+                assetCards.forEach(card => {
+                    card.style.opacity = '0.5';
+                    card.style.transform = 'scale(0.98)';
+                });
+                
+                setTimeout(() => {
+                    assetCards.forEach(card => {
+                        card.style.opacity = '1';
+                        card.style.transform = '';
+                    });
+                }, 300);
+            });
+
+            // 筛选框交互动效
+            filters.forEach(filter => {
+                filter.addEventListener('focus', function() {
+                    this.style.borderColor = '#ffd700';
+                });
+                
+                filter.addEventListener('blur', function() {
+                    this.style.borderColor = '#2A2A35';
+                });
+            });
+        });
+
+        // 页面加载时检查用户模式
+        window.onload = checkUserMode;
+    </script>
+</body>
+</html>
